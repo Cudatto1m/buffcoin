@@ -1,7 +1,6 @@
-name: Orihost AFK Bot
+name: Orihost AFK Bot (Hardcoded Cookie)
 
 on:
-  push:
   schedule:
     - cron: '0 */5 * * *'   # mỗi 5 tiếng (UTC)
   workflow_dispatch:
@@ -9,17 +8,20 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 300   # 5 tiếng
 
     env:
-      RAW_COOKIE: ${{ secrets.RAW_COOKIE }}
+      PYTHONUNBUFFERED: 1  # in log realtime
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python 3.11 (cache pip)
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
