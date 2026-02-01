@@ -1,23 +1,26 @@
-name: Orihost AFK Bot (Hardcoded Cookie)
+name: Orihost AFK Bot (4h59 Auto-Restart)
 
 on:
   schedule:
-    - cron: '0 */5 * * *'   # mỗi 5 tiếng (UTC)
+    # Chạy mỗi 5 tiếng một lần (mốc 0, 5, 10, 15, 20 giờ hàng ngày)
+    - cron: '0 */5 * * *'
   workflow_dispatch:
+
+concurrency:
+  group: orihost-afk
+  cancel-in-progress: true
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 300   # 5 tiếng
-
-    env:
-      PYTHONUNBUFFERED: 1  # in log realtime
+    # Thiết lập trừ hao: tự ngắt sau 4 giờ 59 phút (299 phút)
+    timeout-minutes: 299 
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11 (cache pip)
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -26,8 +29,12 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run AFK script
+        env:
+          ORIHOST_COOKIE: ${{ secrets.ORIHOST_COOKIE }}
+          PYTHONUNBUFFERED: 1
         run: |
+          # Script sẽ chạy cho đến khi bị GitHub ngắt ở phút thứ 299
           python main.py
